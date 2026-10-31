@@ -1,0 +1,19 @@
+{
+  "name": "glasshead",
+  "version": "1.0.0",
+  "description": "A GPT built from scratch in TypeScript — own autograd engine, trained live in the browser, with attention you can watch.",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "test": "node --test \"tests/*.test.ts\"",
+    "train": "node scripts/train.ts",
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.6.0"
+  }
+}

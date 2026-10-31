@@ -1,0 +1,290 @@
+<title>Glasshead</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: an instrument bench — controls rail on the left, live instruments (curves, probe, attention) filling the bench. */
+:root {
+  --bg: #eceff3;
+  --surface: #ffffff;
+  --surface-2: #f5f7fa;
+  --ink: #141c29;
+  --muted: #5a6577;
+  --line: #d3d9e2;
+  --accent: #2346d4;
+  --accent-soft: #e3e8fb;
+  --signal: #d98a1c;
+  --good: #1b7f52;
+  --bad: #c23a32;
+  --heat-hi: #1d36a8;
+  --f-display: "Bricolage Grotesque", "IBM Plex Sans Thai", "Avenir Next", "Segoe UI", sans-serif;
+  --f-body: "Public Sans", "IBM Plex Sans Thai", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", "IBM Plex Sans Thai", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e131b; --surface: #151c27; --surface-2: #1a2230; --ink: #e3e8f0; --muted: #94a0b3;
+    --line: #283244; --accent: #7d97ff; --accent-soft: #1f2a4a; --signal: #f0ac4b;
+    --good: #4cc48a; --bad: #ff7a70; --heat-hi: #a9bbff; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e131b; --surface: #151c27; --surface-2: #1a2230; --ink: #e3e8f0; --muted: #94a0b3;
+  --line: #283244; --accent: #7d97ff; --accent-soft: #1f2a4a; --signal: #f0ac4b;
+  --good: #4cc48a; --bad: #ff7a70; --heat-hi: #a9bbff; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--ink); }
+body {
+  font: 15px/1.55 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 22px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 700; line-height: 1.05; }
+h2 { font-size: 19px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 700; }
+p { margin: 0; }
+.mono, code { font-family: var(--f-mono); font-size: 0.92em; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Masthead */
+.mast { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px 32px; align-items: end; }
+.mast .lede { max-width: 62ch; margin-top: 10px; color: var(--muted); font-size: 16px; }
+.mast .lede b { color: var(--ink); font-weight: 600; }
+.readouts { display: flex; gap: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); overflow: hidden; }
+.readouts > div { padding: 10px 16px; display: grid; gap: 2px; min-width: 92px; }
+.readouts > div + div { border-left: 1px solid var(--line); }
+.readouts .v { font: 600 18px/1.2 var(--f-mono); font-variant-numeric: tabular-nums; }
+.state-pill { display: inline-flex; align-items: center; gap: 6px; font: 600 12px var(--f-mono); }
+.state-pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.state-pill[data-s="training"]::before { background: var(--good); animation: pulse 1s infinite; }
+.state-pill[data-s="trained"]::before { background: var(--accent); }
+@keyframes pulse { 50% { opacity: .3; } }
+
+.topline { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: -10px; }
+.lang { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 3px; gap: 2px; }
+.lang button { border: 0; background: transparent; color: var(--muted); font: 600 13px var(--f-body); padding: 5px 12px; border-radius: 99px; cursor: pointer; min-width: 44px; }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.lang button:hover:not([aria-pressed="true"]) { color: var(--ink); }
+:root[lang="th"] body { line-height: 1.65; }
+:root[lang="th"] .label { letter-spacing: 0.02em; }
+
+/* Bench */
+.bench { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 22px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 14px; min-width: 0; align-content: start; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+.instruments { display: grid; gap: 22px; min-width: 0; }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+
+/* Controls */
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 3px; gap: 3px; }
+.seg button { border: 0; background: transparent; color: var(--muted); font: 600 14px var(--f-body); padding: 8px 4px; border-radius: 6px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+.task-fmt { font: 13px/1.5 var(--f-mono); background: var(--surface-2); border-radius: 6px; padding: 8px 10px; color: var(--muted); }
+.task-fmt b { color: var(--ink); font-weight: 600; }
+.btns { display: grid; gap: 8px; }
+.btn { font: 600 14px var(--f-body); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; text-align: center; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.hp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.hp label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 500; }
+.hp select, .hp input, .probe-in input {
+  font: 14px var(--f-mono); color: var(--ink); background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 6px; padding: 6px 8px; width: 100%; min-width: 0;
+}
+details.hp-box summary { cursor: pointer; font-weight: 600; font-size: 13px; color: var(--muted); }
+details.hp-box[open] summary { margin-bottom: 10px; }
+.note { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+/* Charts */
+.chart { width: 100%; height: 190px; display: block; }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+
+/* Probe */
+.probe-in { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+.probe-in label { display: grid; gap: 4px; flex: 1 1 180px; font-size: 12px; color: var(--muted); }
+.probe-in input { font-size: 18px; padding: 8px 10px; letter-spacing: 0.08em; }
+.probe-err { color: var(--bad); font-size: 13px; min-height: 1.3em; }
+.tokens { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.tok { font: 600 17px var(--f-mono); width: 30px; height: 36px; display: grid; place-items: center; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line); }
+.tok.out { background: var(--accent-soft); border-color: transparent; }
+.tok.out.wrong { background: transparent; border: 1.5px solid var(--bad); color: var(--bad); }
+.verdict { font: 600 13px var(--f-mono); padding: 3px 9px; border-radius: 99px; }
+.verdict.ok { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.verdict.no { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); }
+.topk { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(64px, 1fr); gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.topk .col { display: grid; gap: 3px; background: var(--surface-2); border-radius: 6px; padding: 6px; }
+.topk .bar { display: grid; grid-template-columns: 12px 1fr; gap: 5px; align-items: center; font: 12px var(--f-mono); }
+.topk .bar span:last-child { height: 8px; border-radius: 3px; background: var(--line); position: relative; overflow: hidden; }
+.topk .bar span:last-child::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--accent); }
+.topk .bar.second span:last-child::after { background: var(--muted); }
+
+/* Attention */
+.att-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.att-cell { display: grid; gap: 6px; min-width: 0; }
+.att-cell canvas { width: 100%; height: auto; aspect-ratio: 1; display: block; max-width: 100%; }
+.att-tip { font: 12.5px var(--f-mono); color: var(--muted); min-height: 1.5em; }
+.att-tip b { color: var(--ink); }
+.insight { border-left: 3px solid var(--signal); padding: 4px 0 4px 12px; font-size: 14px; max-width: 75ch; }
+
+/* Proof */
+.proof-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.proof-table th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.proof-table td { padding: 7px 8px; border-bottom: 1px solid var(--line); }
+.proof-table td.mono { font-variant-numeric: tabular-nums; }
+.scroll { overflow-x: auto; }
+.pill { font: 600 11.5px var(--f-mono); padding: 2px 8px; border-radius: 99px; }
+.pill.ok { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.pill.no { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); }
+
+/* Explainer */
+.explain { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: start; }
+.explain .panel p { font-size: 14px; color: var(--muted); }
+.eq { font: 13px/1.7 var(--f-mono); background: var(--surface-2); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; color: var(--ink); }
+.arch { font: 12.5px/1.7 var(--f-mono); color: var(--muted); max-height: 260px; overflow: auto; }
+.arch b { color: var(--ink); font-weight: 600; }
+footer { font-size: 13px; color: var(--muted); }
+
+@media (max-width: 980px) {
+  .bench { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: static; }
+  .explain { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .row2 { grid-template-columns: minmax(0, 1fr); }
+  .mast { grid-template-columns: minmax(0, 1fr); }
+  .readouts { flex-wrap: wrap; }
+  .readouts > div { flex: 1 1 40%; }
+}
+@media (prefers-reduced-motion: reduce) { .state-pill[data-s="training"]::before { animation: none; } }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="topline">
+      <div class="label" data-i18n="mast.eyebrow">Transformer from first principles · no ML libraries</div>
+      <div class="lang" role="group" aria-label="Language" data-i18n-aria="lang.label">
+        <button type="button" id="lang-th" data-lang="th" aria-pressed="false">ไทย</button>
+        <button type="button" id="lang-en" data-lang="en" aria-pressed="true">EN</button>
+      </div>
+    </div>
+    <div>
+      <h1>Glasshead</h1>
+      <p class="lede" data-i18n-html="mast.lede">A small transformer, the same kind of neural network behind today’s AI chatbots, with its <b>own autograd engine</b>, written from scratch in TypeScript. It trains live in your browser on algorithmic tasks, and every attention head is drawn as it learns, so you can see the algorithm the network discovers.</p>
+    </div>
+    <div class="readouts" aria-live="polite">
+      <div><span class="label" data-i18n="ro.state">State</span><span class="state-pill" id="ro-state" data-s="idle">idle</span></div>
+      <div><span class="label" data-i18n="ro.step">Step</span><span class="v" id="ro-step">0</span></div>
+      <div><span class="label" data-i18n="ro.acc">Exact acc.</span><span class="v" id="ro-acc">—</span></div>
+      <div><span class="label" data-i18n="ro.params">Params</span><span class="v" id="ro-params">—</span></div>
+      <div><span class="label" data-i18n="ro.ms">ms / step</span><span class="v" id="ro-ms">—</span></div>
+    </div>
+  </header>
+
+  <section class="bench">
+    <aside class="panel rail" aria-label="Training controls">
+      <div class="panel-head"><h2 data-i18n="panel.task">Task</h2><span class="label" id="mode-label"></span></div>
+      <div class="seg" role="group" aria-label="Task">
+        <button type="button" id="task-reverse" data-task="reverse" aria-pressed="true" data-i18n="task.reverse">Reverse</button>
+        <button type="button" id="task-sort" data-task="sort" aria-pressed="false" data-i18n="task.sort">Sort</button>
+        <button type="button" id="task-add" data-task="add" aria-pressed="false" data-i18n="task.add">Add</button>
+      </div>
+      <div class="task-fmt" id="task-fmt"></div>
+      <div class="btns">
+        <button type="button" class="btn primary" id="btn-scratch" data-i18n="btn.scratch">Train from scratch</button>
+        <button type="button" class="btn" id="btn-pause">Pause</button>
+        <button type="button" class="btn" id="btn-pretrained" data-i18n="btn.pretrained">Load trained model</button>
+      </div>
+      <details class="hp-box">
+        <summary data-i18n="hp.summary">Hyperparameters</summary>
+        <div class="hp">
+          <label><span data-i18n="hp.layers">Layers</span><select id="hp-layers"><option>1</option><option selected>2</option><option>3</option></select></label>
+          <label><span data-i18n="hp.heads">Heads</span><select id="hp-heads"><option>1</option><option>2</option><option selected>4</option></select></label>
+          <label><span data-i18n="hp.width">Width (d_model)</span><select id="hp-width"><option>32</option><option selected>48</option><option>64</option></select></label>
+          <label><span data-i18n="hp.batch">Batch</span><select id="hp-batch"><option>16</option><option selected>32</option><option>64</option></select></label>
+          <label><span data-i18n="hp.lr">Peak LR</span><select id="hp-lr"><option value="0.001">1e-3</option><option value="0.003" selected>3e-3</option><option value="0.01">1e-2</option></select></label>
+          <label><span data-i18n="hp.steps">Steps</span><select id="hp-steps"><option>300</option><option>600</option><option>1000</option><option selected>1500</option><option>3000</option><option>5000</option></select></label>
+          <label><span data-i18n="hp.seed">Seed</span><input id="hp-seed" type="number" value="1337"></label>
+        </div>
+        <p class="note" style="margin-top:10px" data-i18n="hp.note">Same seed gives the same initial weights, batches and loss curve. Changes apply on the next “Train from scratch”.</p>
+      </details>
+      <p class="note" id="rail-note"></p>
+    </aside>
+
+    <div class="instruments">
+      <div class="row2">
+        <div class="panel">
+          <div class="panel-head"><h2 data-i18n="loss.title">Training loss</h2><span class="label" data-i18n="loss.sub">cross-entropy, log scale</span></div>
+          <canvas class="chart" id="chart-loss" aria-label="Training loss chart"></canvas>
+          <div class="legend"><span><i style="background:var(--accent)"></i><span data-i18n="loss.smoothed">smoothed</span></span><span><i style="background:var(--line)"></i><span data-i18n="loss.batch">per batch</span></span><span id="loss-src"></span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2 data-i18n="acc.title">Held-out accuracy</h2><span class="label" data-i18n="acc.sub">64 unseen problems</span></div>
+          <canvas class="chart" id="chart-acc" aria-label="Accuracy chart"></canvas>
+          <div class="legend"><span><i style="background:var(--good)"></i><span data-i18n="acc.exact">exact match</span></span><span><i style="background:var(--muted)"></i><span data-i18n="acc.token">per token</span></span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2 data-i18n="probe.title">Ask the model</h2><span class="label" id="probe-step"></span></div>
+        <div class="probe-in">
+          <label><span data-i18n="probe.prompt">Prompt</span><input id="probe-input" autocomplete="off" spellcheck="false"></label>
+          <button type="button" class="btn" id="btn-random" data-i18n="probe.random">Random problem</button>
+        </div>
+        <div class="probe-err" id="probe-err" role="alert"></div>
+        <div class="tokens" id="probe-tokens"></div>
+        <div class="label" data-i18n="probe.topk">Top-3 next-token probabilities at each answer position</div>
+        <div class="topk" id="probe-topk"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2 data-i18n="att.title">Attention, every layer and head</h2><span class="label" data-i18n="att.sub">rows = query position · columns = key position</span></div>
+        <p class="insight" id="insight"></p>
+        <div class="att-grid" id="att-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="explain">
+    <div class="panel">
+      <div class="panel-head"><h2 data-i18n="proof.title">Prove the gradients</h2></div>
+      <p data-i18n="proof.body">Every backward pass is hand-written. This runs a finite-difference check of each one in your browser, then of the whole model end to end.</p>
+      <button type="button" class="btn" id="btn-gradcheck" data-i18n="proof.run">Run gradient check</button>
+      <div class="scroll"><table class="proof-table" id="proof-table" hidden>
+        <thead><tr><th data-i18n="proof.op">Operation</th><th data-i18n="proof.err">Max rel. error</th><th></th></tr></thead><tbody></tbody>
+      </table></div>
+      <p class="note" id="proof-note"></p>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2 data-i18n="fused.title">Fused attention backward</h2></div>
+      <p data-i18n="fused.body">Attention is one op with a hand-derived gradient, so the engine never materialises per-head tensors.</p>
+      <div class="eq">S  = QKᵀ / √d   (causal mask)
+P  = softmax(S)
+O  = P V
+
+dV = Pᵀ dO
+dP = dO Vᵀ
+dS = P ⊙ (dP − rowsum(P ⊙ dP))
+dQ = dS K / √d
+dK = dSᵀ Q / √d</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2 data-i18n="params.title">Parameters</h2><span class="label" id="arch-count"></span></div>
+      <div class="arch" id="arch"></div>
+    </div>
+  </section>
+
+  <footer data-i18n="footer">Engine: reverse-mode autodiff on Float64 tensors · pre-LayerNorm transformer block · GELU · AdamW with warmup + cosine decay · gradient clipping · seeded RNG. Training runs in a Web Worker so the page stays responsive.</footer>
+</div>
