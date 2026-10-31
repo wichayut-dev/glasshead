@@ -4,7 +4,9 @@ A small transformer language model built from first principles in TypeScript —
 
 The model is trained on small algorithmic tasks (reverse, sort, add) where the *correct algorithm is known*, so you can open the attention maps and check whether the network actually discovered it.
 
-![attention heads on the reverse task](docs/screenshot.png)
+**Live demo: https://wichayut-dev.github.io/glasshead/** (runs entirely in your browser, Thai / English)
+
+![Glasshead training lab](docs/screenshot.png)
 
 ## Why this project
 
